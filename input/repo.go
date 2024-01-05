@@ -15,7 +15,7 @@ func NewProjectRepoInfo(name, owner string, ParseType int) *ProjectRepoInfo {
 
 	switch ParseType {
 	case util.Issues:
-		ParseTypeStr = "Issues"
+		ParseTypeStr = "issues"
 	case util.PullRequest:
 		ParseTypeStr = "pull"
 	}
