@@ -14,21 +14,29 @@ https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api?ap
 */
 type GitHubClient struct {
 	Token string
+	Repo  *ProjectRepoInfo
+}
+
+func NewGithubClient(token string, repo *ProjectRepoInfo) *GitHubClient {
+	return &GitHubClient{
+		token,
+		repo,
+	}
 }
 
 /*
 해당 함수를 실행시킴으로 써 issue, pull request에 등록되어진 데이터를 조회합니다
 입력 받는 함수로서 프로젝트의 owner와 repo 이름, 그리고 수집하고자 하는 데이터의 타입을 입력받습니다(issue,pr)
 */
-func (client *GitHubClient) ParseData(owner, repo, itemType string) []byte {
+func (c *GitHubClient) CallApi() []byte {
 
-	url := fmt.Sprintf(url+"%s/%s/%s", owner, repo, itemType)
+	url := fmt.Sprintf(url+"%s/%s/%s", c.Repo.Name, c.Repo.Owner, c.Repo.ParseType)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 	}
 
-	req.Header.Set("Authorization", "token "+client.Token)
+	req.Header.Set("Authorization", "token "+c.Token)
 
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
