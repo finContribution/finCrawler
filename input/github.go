@@ -62,6 +62,7 @@ func (c GitHubClient) Crawler() *chan []byte {
 		if len(issues) == 0 {
 			break
 		}
+		fmt.Printf(string(issues))
 	}
 	return &ch
 }
