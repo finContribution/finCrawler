@@ -49,20 +49,21 @@ func (c *GitHubClient) CallAPI(page int, ch chan<- []byte) {
 	if err != nil {
 		panic(err)
 	}
-
+	if len(data) == 0 {
+		return
+	}
 	ch <- data
 }
 
-func (c GitHubClient) Crawler() *chan []byte {
+/*
+CallAPI 호출을 통해 불러 온 모든 데이터를 채널에 적재할 수 있도록 합니다
+(페이징 된 데이터를 지속적으로 불러옵니다. 대신 APICounter에 등록되어진 요청할 수 있는 한계를 지정합니다)
+channel이 close 되지 않은 상태임에 따라 사용 시 주의가 필요함
+*/
+func (c GitHubClient) Crawling() chan []byte {
 	ch := make(chan []byte)
 	for i := 1; i < util.APICounter; i++ {
 		go c.CallAPI(i, ch)
-
-		issues := <-ch
-		if len(issues) == 0 {
-			break
-		}
-		fmt.Printf(string(issues))
 	}
-	return &ch
+	return ch
 }

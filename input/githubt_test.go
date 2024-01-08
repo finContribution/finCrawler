@@ -3,6 +3,7 @@ package input
 import (
 	"bytes"
 	"fineC/util"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -49,7 +50,11 @@ func TestGitHubClient_Crawler(t *testing.T) {
 	token := util.NewToken("../.env")
 	mock := NewGithubClient(token, repo)
 
-	mock.Crawler()
+	ch := mock.Crawling()
+
+	for data := range ch {
+		fmt.Println(string(data))
+	}
 
 	//test.
 }
