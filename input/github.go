@@ -36,6 +36,9 @@ func (c *GitHubClient) check(res *http.Response) bool {
 */
 func (c *GitHubClient) CallAPI(page int, ch chan<- []byte) {
 	url := c.Url + fmt.Sprintf("?page=%d", page)
+
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := http.Get(url)
 	if resp.StatusCode != http.StatusOK {
 		message, _ := io.ReadAll(resp.Body)
