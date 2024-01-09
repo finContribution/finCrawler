@@ -51,6 +51,7 @@ func TestGitHubClient_Crawler(t *testing.T) {
 	mock := NewGithubClient(token, repo)
 
 	ch := mock.Crawling()
+	defer close(ch)
 
 	for data := range ch {
 		fmt.Println(string(data))

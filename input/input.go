@@ -1,5 +1,5 @@
 package input
 
 type Input interface {
-	Crawling() chan [][]byte
+	Crawling() chan []byte
 }

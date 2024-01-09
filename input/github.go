@@ -3,8 +3,8 @@ package input
 import (
 	"fineC/util"
 	"fmt"
+	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -38,7 +38,9 @@ func (c *GitHubClient) CallAPI(page int, ch chan<- []byte) {
 	url := c.Url + fmt.Sprintf("?page=%d", page)
 	resp, err := http.Get(url)
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Response was wrong, status code is %d", resp.StatusCode)
+		message, _ := io.ReadAll(resp.Body)
+		//log.Fatalf("Response was wrong, status code is %d, message: %s", resp.StatusCode, message)
+		fmt.Printf("Response was wrong, status code is %d, message: %s", resp.StatusCode, message)
 	}
 	if err != nil {
 		panic(err)
@@ -62,6 +64,7 @@ channel이 close 되지 않은 상태임에 따라 사용 시 주의가 필요�
 */
 func (c GitHubClient) Crawling() chan []byte {
 	ch := make(chan []byte)
+
 	for i := 1; i < util.APICounter; i++ {
 		go c.CallAPI(i, ch)
 	}
