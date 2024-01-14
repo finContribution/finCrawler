@@ -3,7 +3,6 @@ package input
 import (
 	"bytes"
 	"fineC/util"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -34,11 +33,8 @@ func TestCallAPI(t *testing.T) {
 		Url: ts.URL,
 	}
 
-	ch := make(chan []byte)
-	go client.CallAPI(1, ch)
+	resp := client.CallAPI(1)
 
-	// 채널에서 데이터 받기
-	resp := <-ch
 	if !bytes.Equal(resp, []byte(`test response`)) {
 		t.Errorf("Expected 'test response', got '%s'", resp)
 	}
@@ -46,15 +42,21 @@ func TestCallAPI(t *testing.T) {
 
 func TestGitHubClient_Crawler(t *testing.T) {
 	// Github client 객체를 생성하기 위한 mock 객체 생성
-	repo := NewProjectRepoInfo("kubernetes", "kubernetes", util.Issues)
-	token := util.NewToken("../.env")
-	mock := NewGithubClient(token, repo)
+	// 테스트 서버 설정
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`test response`))
+	}))
+	defer ts.Close()
+	mock := &GitHubClient{
+		Url: ts.URL,
+	}
 
 	ch := mock.Crawling()
-	defer close(ch)
+	close(ch)
+	test := assert.New(t)
 
 	for data := range ch {
-		fmt.Println(string(data))
+		test.Equal(data, []byte(`test response`))
 	}
 
 	//test.

@@ -4,7 +4,6 @@ import (
 	"fineC/util"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -25,16 +24,11 @@ func NewGithubClient(token string, repo *ProjectRepoInfo) *GitHubClient {
 	}
 }
 
-func (c *GitHubClient) check(res *http.Response) bool {
-	links := res.Header.Get("Link")
-	return links != ""
-}
-
 /*
 해당 함수를 실행시킴으로 써 issue, pull request에 등록되어진 데이터를 조회합니다
 입력 받는 함수로서 프로젝트의 owner와 repo 이름, 그리고 수집하고자 하는 데이터의 타입을 입력받습니다(issue,pr)
 */
-func (c *GitHubClient) CallAPI(page int, ch chan<- []byte) {
+func (c *GitHubClient) CallAPI(page int) []byte {
 	url := c.Url + fmt.Sprintf("?page=%d", page)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -50,14 +44,14 @@ func (c *GitHubClient) CallAPI(page int, ch chan<- []byte) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
 	if len(data) == 0 {
-		return
+		return nil
 	}
-	ch <- data
+	return data
 }
 
 /*
@@ -67,9 +61,10 @@ channel이 close 되지 않은 상태임에 따라 사용 시 주의가 필요�
 */
 func (c GitHubClient) Crawling() chan []byte {
 	ch := make(chan []byte)
-
 	for i := 1; i < util.APICounter; i++ {
-		go c.CallAPI(i, ch)
+		go func() {
+			ch <- c.CallAPI(i)
+		}()
 	}
 	return ch
 }
