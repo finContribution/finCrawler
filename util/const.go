@@ -9,3 +9,7 @@ const (
 	Issues = 10 << iota
 	PullRequest
 )
+
+const (
+	APICounter = 5
+)
