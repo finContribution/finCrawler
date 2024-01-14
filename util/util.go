@@ -5,9 +5,9 @@ import (
 	"os"
 )
 
-func LoadEnv() error {
+func LoadEnv(path string) error {
 	// .env 파일 로드
-	err := godotenv.Load(".env")
+	err := godotenv.Load(path)
 	if err != nil {
 		return err
 	}
@@ -15,8 +15,8 @@ func LoadEnv() error {
 	return nil
 }
 
-func NewToken() string {
-	LoadEnv()
+func NewToken(path string) string {
+	LoadEnv(path)
 	result := os.Getenv("TOKEN")
 	return result
 }
