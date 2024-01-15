@@ -1,43 +1,36 @@
 package output
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
+	"time"
 )
 
-func TestElasticOutput_Convert(t *testing.T) {
-	test_obj := []byte(`[
-    {"id": 1, "name": "Alice", "email": "alice@example.com", "isActive": true, "scores": [85, 92, 78], "metadata": {"role": "admin", "department": "sales"}},
-    {"id": 2, "name": "Bob", "email": "bob@example.com", "isActive": false, "scores": [72, 88, 91], "metadata": {"role": "user", "department": "tech"}}
-]`)
-	client, _ := elasticsearch.NewDefaultClient()
-	eo := ElasticOutput{Client: client, Schema: "test-index"}
-	obj := eo.Convert(test_obj)
-	test := assert.New(t)
+// TestParseChan 함수는 ParseChan 메소드를 테스트합니다.
+func TestParseChan(t *testing.T) {
+	// Mock 데이터 생성
+	jsonData := []byte(`[{"name": "Alice", "age": 30}]`)
+	inputChan := make(chan []byte, 1)
+	outputChan := make(chan map[string]interface{}, 1)
 
-	var expected []map[string]interface{}
-	json.Unmarshal(test_obj, &expected)
-	test.Equal(expected, obj)
+	eo := ElasticsearchOutput{OutputDataStream: outputChan}
+	go eo.Convert(inputChan)
 
-}
+	// Input 채널에 데이터 전달
+	inputChan <- jsonData
+	close(inputChan) // 채널 닫기
 
-func TestElasticOutput_Receive(t *testing.T) {
-	ch := make(chan []byte, 2)
-	client, _ := elasticsearch.NewDefaultClient()
-	eo := ElasticOutput{Client: client, Schema: "test-index"}
-	test_obj := []byte(`[
-    {"id": 1, "name": "Alice", "email": "alice@example.com", "isActive": true, "scores": [85, 92, 78], "metadata": {"role": "admin", "department": "sales"}},
-    {"id": 2, "name": "Bob", "email": "bob@example.com", "isActive": false, "scores": [72, 88, 91], "metadata": {"role": "user", "department": "tech"}}
-]`)
-	eo.Receive(ch)
-	ch <- test_obj
-	close(ch)
+	// 결과를 기다리는 타임아웃 설정
+	select {
+	case result := <-outputChan:
+		expected := map[string]interface{}{"name": "Alice", "age": float64(30)} // JSON 파싱 결과는 float64로 처리될 수 있음
 
-	for data := range eo.ConvertedData {
-		fmt.Println(data)
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("Got %v, want %v", result, expected)
+		}
+
+	case <-time.After(2 *
+		time.Second): // 1초 타임아웃
+		t.Error("Test timed out")
 	}
-
 }
