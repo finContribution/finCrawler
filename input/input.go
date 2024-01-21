@@ -1,6 +1,6 @@
 package input
 
 type Input interface {
-	CallAPI(interface{}) []byte
-	Crawling() chan []byte
+	CallAPI(page int) ([]byte, error)
+	Crawling(ch chan []byte)
 }

@@ -28,7 +28,7 @@ func NewGithubClient(token string, repo *ProjectRepoInfo) *GitHubClient {
 해당 함수를 실행시킴으로 써 issue, pull request에 등록되어진 데이터를 조회합니다
 입력 받는 함수로서 프로젝트의 owner와 repo 이름, 그리고 수집하고자 하는 데이터의 타입을 입력받습니다(issue,pr)
 */
-func (c *GitHubClient) CallAPI(page int) []byte {
+func (c *GitHubClient) CallAPI(page int) ([]byte, error) {
 	url := c.Url + fmt.Sprintf("?page=%d", page)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -36,22 +36,23 @@ func (c *GitHubClient) CallAPI(page int) []byte {
 	resp, err := http.Get(url)
 	if resp.StatusCode != http.StatusOK {
 		message, _ := io.ReadAll(resp.Body)
-		//log.Fatalf("Response was wrong, status code is %d, message: %s", resp.StatusCode, message)
-		fmt.Printf("Response was wrong, status code is %d, message: %s", resp.StatusCode, message)
+		err := fmt.Errorf("Response was wrong, status code is %d, message: %s", resp.StatusCode, message)
+		return nil, err
+
 	}
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	if len(data) == 0 {
-		return nil
+		return nil, err
 	}
-	return data
+	return data, nil
 }
 
 /*
@@ -61,7 +62,11 @@ channel이 close 되지 않은 상태임에 따라 사용 시 주의가 필요�
 */
 func (c GitHubClient) Crawling(ch chan []byte) {
 	for i := 1; i < util.APICounter; i++ {
-		ch <- c.CallAPI(i)
+		data, err := c.CallAPI(i)
+		if err != nil {
+			panic(err)
+		}
+		ch <- data
 	}
 	close(ch)
 }
