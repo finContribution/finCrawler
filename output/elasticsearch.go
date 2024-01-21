@@ -3,6 +3,7 @@ package output
 import (
 	"context"
 	"encoding/json"
+	"fineC/util"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 	"log"
@@ -10,12 +11,15 @@ import (
 )
 
 type ElasticsearchOutput struct {
+	Context          context.Context
 	Client           *elasticsearch.Client
 	IndexName        string
 	OutputDataStream chan map[string]interface{}
 }
 
+// TODO 데이터 convert 후 'OutputDataStream' 채널에 대한 관리를 어떻게 할 것인지 파악 필요
 func (eo *ElasticsearchOutput) Convert(input chan []byte) {
+	eo.OutputDataStream = make(chan map[string]interface{}, util.APICounter*10)
 	for data := range input {
 		go func(data []byte) { // 고루틴으로 병렬 처리
 			var parseDatas []map[string]interface{}
@@ -31,6 +35,7 @@ func (eo *ElasticsearchOutput) Convert(input chan []byte) {
 	}
 }
 
+// TODO 모든 데이터 전송완료 후 시스템의 중단 시점을 찾아야함 Context를 통한 채널 닫는 것으로 생각 중
 // 생성된 인스턴스의 OutputDataStream을 통해서 converted 된 데이터를 처리하기 위한 로직입니다.
 func (eo *ElasticsearchOutput) Send() {
 	// 벌크 인덱서 설정
@@ -63,8 +68,6 @@ func (eo *ElasticsearchOutput) Send() {
 			},
 		)
 	}
-
-	close(eo.OutputDataStream)
 
 	if err != nil {
 		log.Fatalf("Error adding item to bulk indexer: %s", err)
