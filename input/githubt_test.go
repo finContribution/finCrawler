@@ -33,7 +33,7 @@ func TestCallAPI(t *testing.T) {
 		Url: ts.URL,
 	}
 
-	resp := client.CallAPI(1)
+	resp, _ := client.CallAPI(1)
 
 	if !bytes.Equal(resp, []byte(`test response`)) {
 		t.Errorf("Expected 'test response', got '%s'", resp)
@@ -50,9 +50,10 @@ func TestGitHubClient_Crawler(t *testing.T) {
 	mock := &GitHubClient{
 		Url: ts.URL,
 	}
-
-	ch := mock.Crawling()
+	ch := make(chan []byte, 2)
 	close(ch)
+	mock.Crawling(ch)
+
 	test := assert.New(t)
 
 	for data := range ch {
