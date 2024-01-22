@@ -1,6 +1,6 @@
 package output
 
 type Output interface {
-	Convert(chan []byte)
+	Convert(input chan []byte)
 	Send()
 }
