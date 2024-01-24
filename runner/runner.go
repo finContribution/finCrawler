@@ -2,7 +2,9 @@ package runner
 
 import (
 	"fineC/input"
+	"fineC/input/inputGithub"
 	"fineC/output"
+	elasticsearch2 "fineC/output/outputElasticsearch"
 	"fineC/util"
 	"github.com/elastic/go-elasticsearch/v7"
 )
@@ -20,13 +22,13 @@ func NewRunner(inputFlag, outputFlag, url string) *Runner {
 
 	switch inputFlag {
 	case "github":
-		inputObject = &input.GitHubClient{Token: util.NewToken("../.env"), Url: url}
+		inputObject = &inputGithub.GitHubClient{Token: util.NewToken("../.env"), Url: url}
 
 	}
 	switch outputFlag {
-	case "elasticsearch":
+	case "outputElasticsearch":
 		client, _ := elasticsearch.NewDefaultClient()
-		outputObject = &output.ElasticsearchOutput{
+		outputObject = &elasticsearch2.ElasticsearchOutput{
 			Client:    client,
 			IndexName: "test-index",
 		}

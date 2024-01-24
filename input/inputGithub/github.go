@@ -1,4 +1,4 @@
-package input
+package inputGithub
 
 import (
 	"fineC/util"
@@ -16,11 +16,11 @@ type GitHubClient struct {
 	Url   string
 }
 
-func NewGithubClient(token string, repo *ProjectRepoInfo) *GitHubClient {
-	var origin string = "https://api.github.com/repos"
+func NewGithubClient(token string, repo string) *GitHubClient {
+	var origin string = "https://api.github.com/repos/"
 	return &GitHubClient{
 		Token: token,
-		Url:   origin + "/" + repo.Owner + "/" + repo.Name + "/" + repo.ParseType,
+		Url:   origin + repo + "/issues",
 	}
 }
 

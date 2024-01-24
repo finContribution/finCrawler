@@ -1,4 +1,4 @@
-package output
+package outputElasticsearch
 
 import (
 	"context"
@@ -25,8 +25,8 @@ func (eo *ElasticsearchOutput) Convert(input chan []byte) {
 			var parseDatas []map[string]interface{}
 			err := json.Unmarshal(data, &parseDatas)
 			if err != nil {
-				log.Printf("Can't insert to elasticsearch: %v", err) // 에러 로깅 변경
-				return                                               // 에러 발생 시 다음 데이터로 넘어감
+				log.Printf("Can't insert to outputElasticsearch: %v", err) // 에러 로깅 변경
+				return                                                     // 에러 발생 시 다음 데이터로 넘어감
 			}
 			for _, parseData := range parseDatas {
 				eo.OutputDataStream <- parseData

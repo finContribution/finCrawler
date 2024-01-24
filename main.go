@@ -2,7 +2,8 @@ package main
 
 import (
 	"fineC/input"
-	"fineC/output"
+	"fineC/input/inputGithub"
+	elasticsearch2 "fineC/output/outputElasticsearch"
 	runner2 "fineC/runner"
 	"fineC/util"
 	"github.com/elastic/go-elasticsearch/v7"
@@ -10,9 +11,9 @@ import (
 
 func main() {
 	repo := input.NewProjectRepoInfo("kubernetes", "kubernetes", util.Issues)
-	input := input.NewGithubClient(util.NewToken("./.env"), repo)
+	input := inputGithub.NewGithubClient(util.NewToken("./.env"), repo)
 	client, _ := elasticsearch.NewDefaultClient()
-	output := &output.ElasticsearchOutput{Client: client, IndexName: "test-index"}
+	output := &elasticsearch2.ElasticsearchOutput{Client: client, IndexName: "test-index"}
 
 	runner := &runner2.Runner{
 		Input:  input,

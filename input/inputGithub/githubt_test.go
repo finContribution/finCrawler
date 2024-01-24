@@ -1,4 +1,4 @@
-package input
+package inputGithub
 
 import (
 	"bytes"
@@ -11,9 +11,8 @@ import (
 
 func TestNewGithubClient(t *testing.T) {
 	// client 객체 생성을 확인하기 위한 mock 객체 생성
-	repo := NewProjectRepoInfo("kubernetes", "kubernetes", util.Issues)
 	token := util.NewToken("../'.env")
-	client := NewGithubClient(token, repo)
+	client := NewGithubClient(token, "kubernetes/kubernetes")
 	test := assert.New(t)
 
 	// 테스트 로직
